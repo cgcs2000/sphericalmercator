@@ -1,6 +1,8 @@
 [![Build Status](https://secure.travis-ci.org/mapbox/node-sphericalmercator.svg?branch=master)](http://travis-ci.org/mapbox/node-sphericalmercator)
 
-`node-sphericalmercator` provides projection math for converting between
+> This repository is a fork of `mapbox/sphericalmercator`, but for CGCS2000.
+
+`sphericalmercator` provides projection math for converting between
 mercator meters, screen pixels (of 256x256 or configurable-size tiles), and
 latitude/longitude.
 
