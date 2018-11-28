@@ -50,21 +50,19 @@ SphericalMercator.prototype.px = function(ll, zoom) {
     var bc = (size / 360);
     var cc = (size / (2 * Math.PI));
     var ac = size;
-    var f = Math.min(Math.max(Math.sin(D2R * ll[1]), -0.9999), 0.9999);
     var x = d + ll[0] * bc;
-    var y = d + 0.5 * Math.log((1 + f) / (1 - f)) * -cc;
+    var y = d / 2 - ll[1] * bc;
     (x > ac) && (x = ac);
-    (y > ac) && (y = ac);
+    (y > d) && (y = d);
     //(x < 0) && (x = 0);
     //(y < 0) && (y = 0);
     return [x, y];
   } else {
     var d = this.zc[zoom];
-    var f = Math.min(Math.max(Math.sin(D2R * ll[1]), -0.9999), 0.9999);
     var x = Math.round(d + ll[0] * this.Bc[zoom]);
-    var y = Math.round(d + 0.5 * Math.log((1 + f) / (1 - f)) * (-this.Cc[zoom]));
+    var y = Math.round(d / 2 - ll[1] * this.Bc[zoom]);
     (x > this.Ac[zoom]) && (x = this.Ac[zoom]);
-    (y > this.Ac[zoom]) && (y = this.Ac[zoom]);
+    (y > d) && (y = d);
     //(x < 0) && (x = 0);
     //(y < 0) && (y = 0);
     return [x, y];
@@ -81,14 +79,12 @@ SphericalMercator.prototype.ll = function(px, zoom) {
     var bc = (size / 360);
     var cc = (size / (2 * Math.PI));
     var zc = size / 2;
-    var g = (px[1] - zc) / -cc;
     var lon = (px[0] - zc) / bc;
-    var lat = R2D * (2 * Math.atan(Math.exp(g)) - 0.5 * Math.PI);
+    var lat = (zc / 2 - px[1]) / bc
     return [lon, lat];
   } else {
-    var g = (px[1] - this.zc[zoom]) / (-this.Cc[zoom]);
     var lon = (px[0] - this.zc[zoom]) / this.Bc[zoom];
-    var lat = R2D * (2 * Math.atan(Math.exp(g)) - 0.5 * Math.PI);
+    var lat = (this.zc[zoom] / 2 - px[1]) / this.Bc[zoom];
     return [lon, lat];
   }
 };
@@ -99,12 +95,12 @@ SphericalMercator.prototype.ll = function(px, zoom) {
 // - `y` {Number} y (latitude) number.
 // - `zoom` {Number} zoom.
 // - `tms_style` {Boolean} whether to compute using tms-style.
-// - `srs` {String} projection for resulting bbox (WGS84|900913).
+// - `srs` {String} projection for resulting bbox (EPSG:4490|EPSG:4087).
 // - `return` {Array} bbox array of values in form `[w, s, e, n]`.
 SphericalMercator.prototype.bbox = function(x, y, zoom, tms_style, srs) {
-    // Convert xyz into bbox with srs WGS84
+    // Convert xyz into bbox with srs EPSG:4490
     if (tms_style) {
-        y = (Math.pow(2, zoom) - 1) - y;
+        y = (Math.pow(2, zoom - 1) - 1) - y;
     }
     // Use +y to make sure it's a number to avoid inadvertent concatenation.
     var ll = [x * this.size, (+y + 1) * this.size]; // lower left
@@ -112,9 +108,9 @@ SphericalMercator.prototype.bbox = function(x, y, zoom, tms_style, srs) {
     var ur = [(+x + 1) * this.size, y * this.size]; // upper right
     var bbox = this.ll(ll, zoom).concat(this.ll(ur, zoom));
 
-    // If web mercator requested reproject to 900913.
-    if (srs === '900913') {
-        return this.convert(bbox, '900913');
+    // If web mercator requested reproject to EPSG:4087.
+    if (srs === 'EPSG:4087') {
+        return this.convert(bbox, 'EPSG:4087');
     } else {
         return bbox;
     }
@@ -125,12 +121,12 @@ SphericalMercator.prototype.bbox = function(x, y, zoom, tms_style, srs) {
 // - `bbox` {Number} bbox in the form `[w, s, e, n]`.
 // - `zoom` {Number} zoom.
 // - `tms_style` {Boolean} whether to compute using tms-style.
-// - `srs` {String} projection of input bbox (WGS84|900913).
+// - `srs` {String} projection of input bbox (EPSG:4490|EPSG:4087).
 // - `@return` {Object} XYZ bounds containing minX, maxX, minY, maxY properties.
 SphericalMercator.prototype.xyz = function(bbox, zoom, tms_style, srs) {
-    // If web mercator provided reproject to WGS84.
-    if (srs === '900913') {
-        bbox = this.convert(bbox, 'WGS84');
+    // If web mercator provided reproject to EPSG:4490.
+    if (srs === 'EPSG:4087') {
+        bbox = this.convert(bbox, 'EPSG:4490');
     }
 
     var ll = [bbox[0], bbox[1]]; // lower left
@@ -148,8 +144,8 @@ SphericalMercator.prototype.xyz = function(bbox, zoom, tms_style, srs) {
     };
     if (tms_style) {
         var tms = {
-            minY: (Math.pow(2, zoom) - 1) - bounds.maxY,
-            maxY: (Math.pow(2, zoom) - 1) - bounds.minY
+            minY: (Math.pow(2, zoom - 1) - 1) - bounds.maxY,
+            maxY: (Math.pow(2, zoom - 1) - 1) - bounds.minY
         };
         bounds.minY = tms.minY;
         bounds.maxY = tms.maxY;
@@ -160,36 +156,36 @@ SphericalMercator.prototype.xyz = function(bbox, zoom, tms_style, srs) {
 // Convert projection of given bbox.
 //
 // - `bbox` {Number} bbox in the form `[w, s, e, n]`.
-// - `to` {String} projection of output bbox (WGS84|900913). Input bbox
+// - `to` {String} projection of output bbox (EPSG:4490|EPSG:4087). Input bbox
 //   assumed to be the "other" projection.
 // - `@return` {Object} bbox with reprojected coordinates.
 SphericalMercator.prototype.convert = function(bbox, to) {
-    if (to === '900913') {
+    if (to === 'EPSG:4087') {
         return this.forward(bbox.slice(0, 2)).concat(this.forward(bbox.slice(2,4)));
     } else {
         return this.inverse(bbox.slice(0, 2)).concat(this.inverse(bbox.slice(2,4)));
     }
 };
 
-// Convert lon/lat values to 900913 x/y.
+// Convert lon/lat values to EPSG:4087 x/y.
 SphericalMercator.prototype.forward = function(ll) {
     var xy = [
         A * ll[0] * D2R,
-        A * Math.log(Math.tan((Math.PI*0.25) + (0.5 * ll[1] * D2R)))
+        A * ll[1] * D2R
     ];
     // if xy value is beyond maxextent (e.g. poles), return maxextent.
     (xy[0] > MAXEXTENT) && (xy[0] = MAXEXTENT);
     (xy[0] < -MAXEXTENT) && (xy[0] = -MAXEXTENT);
-    (xy[1] > MAXEXTENT) && (xy[1] = MAXEXTENT);
-    (xy[1] < -MAXEXTENT) && (xy[1] = -MAXEXTENT);
+    (xy[1] > MAXEXTENT / 2) && (xy[1] = MAXEXTENT / 2);
+    (xy[1] < -MAXEXTENT / 2) && (xy[1] = -MAXEXTENT / 2);
     return xy;
 };
 
-// Convert 900913 x/y values to lon/lat.
+// Convert EPSG:4087 x/y values to lon/lat.
 SphericalMercator.prototype.inverse = function(xy) {
     return [
         (xy[0] * R2D / A),
-        ((Math.PI*0.5) - 2.0 * Math.atan(Math.exp(-xy[1] / A))) * R2D
+        (xy[1] * R2D / A)
     ];
 };
 

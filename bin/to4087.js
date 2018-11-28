@@ -3,7 +3,7 @@ var SphericalMercator = require('../sphericalmercator');
 var sm = new SphericalMercator({ size: 256 });
 
 function usage() {
-    console.log("toWgs84 <x> <y>");
+    console.log("to4087 <lon> <lat>");
 }
 
 process.argv.shift(); // drop the `node`
@@ -11,9 +11,9 @@ process.argv.shift(); // drop the `path to executable`
 
 if (process.argv.length < 2) return usage();
 
-var x = process.argv.shift();
-var y = process.argv.shift();
+var lon = process.argv.shift();
+var lat = process.argv.shift();
 
-var ll = sm.inverse([x,y]);
+var xy = sm.forward([lon,lat]);
 
-console.log(JSON.stringify(ll));
+console.log(JSON.stringify(xy));

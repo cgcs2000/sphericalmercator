@@ -3,7 +3,7 @@ var SphericalMercator = require('../sphericalmercator');
 var sm = new SphericalMercator({ size: 256 });
 
 function usage() {
-    console.log("bbox <west> <south> <east> <north> <zoom> [--tms_style | -t] [900913 | WGS84]");
+    console.log("bbox <west> <south> <east> <north> <zoom> [--tms_style | -t] [EPSG:4490 | EPSG:4087]");
 }
 
 process.argv.shift(); // drop the `node`
@@ -18,7 +18,7 @@ var n = process.argv.shift();
 var z = process.argv.shift();
 
 var tms_style = process.argv.indexOf('--tms_style') !== -1 || process.argv.indexOf('-t') !== -1;
-var proj = process.argv.indexOf('900913') !== -1 ? '900913' : 'WGS84';
+var proj = process.argv.indexOf('900913') !== -1 ? 'EPSG:4087' : 'EPSG:4490';
 
 var xyz = sm.xyz([w,s,e,n], z, tms_style, proj);
 
