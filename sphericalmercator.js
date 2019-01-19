@@ -100,7 +100,7 @@ SphericalMercator.prototype.ll = function(px, zoom) {
 SphericalMercator.prototype.bbox = function(x, y, zoom, tms_style, srs) {
     // Convert xyz into bbox with srs EPSG:4490
     if (tms_style) {
-        y = (Math.pow(2, zoom - 1) - 1) - y;
+        y = zoom === 0 ? 0 : (Math.pow(2, zoom - 1) - 1) - y;
     }
     // Use +y to make sure it's a number to avoid inadvertent concatenation.
     var ll = [x * this.size, (+y + 1) * this.size]; // lower left

@@ -1,5 +1,5 @@
 {
-  "name": "@jingsam/sphericalmercator",
+  "name": "@cgcs2000/sphericalmercator",
   "description": "Transformations between the EPSG:4490 and EPSG:4087",
   "version": "1.1.0",
   "licenses": [
@@ -12,10 +12,10 @@
     "projection",
     "transformations"
   ],
-  "url": "http://github.com/jingsam/sphericalmercator",
+  "url": "http://github.com/cgcs2000/sphericalmercator",
   "repository": {
     "type": "git",
-    "url": "git://github.com/jingsam/sphericalmercator.git"
+    "url": "git://github.com/cgcs2000/sphericalmercator.git"
   },
   "author": {
     "name": "MapBox",
