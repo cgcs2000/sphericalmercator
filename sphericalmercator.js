@@ -116,7 +116,7 @@ SphericalMercator.prototype.bbox = function(x, y, zoom, tms_style, srs) {
     }
 };
 
-// Convert bbox to xyx bounds
+// Convert bbox to xyz bounds
 //
 // - `bbox` {Number} bbox in the form `[w, s, e, n]`.
 // - `zoom` {Number} zoom.
@@ -144,8 +144,8 @@ SphericalMercator.prototype.xyz = function(bbox, zoom, tms_style, srs) {
     };
     if (tms_style) {
         var tms = {
-            minY: (Math.pow(2, zoom - 1) - 1) - bounds.maxY,
-            maxY: (Math.pow(2, zoom - 1) - 1) - bounds.minY
+            minY: zoom === 0 ? 0 : (Math.pow(2, zoom - 1) - 1) - bounds.maxY,
+            maxY: zoom === 0 ? 0 : (Math.pow(2, zoom - 1) - 1) - bounds.minY
         };
         bounds.minY = tms.minY;
         bounds.maxY = tms.maxY;

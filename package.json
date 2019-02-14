@@ -1,7 +1,7 @@
 {
   "name": "@cgcs2000/sphericalmercator",
   "description": "Transformations between the EPSG:4490 and EPSG:4087",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "licenses": [
     {
       "type": "BSD"
